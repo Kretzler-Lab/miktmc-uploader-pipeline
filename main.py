@@ -3,6 +3,7 @@ from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection
 import argparse
 
+
 class Main:
     def __init__(self):
         self.redcap_connection = RedcapConnection()
@@ -23,6 +24,7 @@ class Main:
 
     def print_redcap_data_biopsy_id(self, biopsy_id: str):
         print(self.redcap_connection.get_by_biopsy_id(biopsy_id))
+
 
 if __name__ == "__main__":
     main = Main()

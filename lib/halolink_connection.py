@@ -7,6 +7,7 @@ from gql.transport.websockets import WebsocketsTransport
 
 HALOLINK_HOST = "dpr.niddk.nih.gov"
 
+
 class HalolinkConnection:
 
     def __init__(self):
@@ -16,9 +17,6 @@ class HalolinkConnection:
         self.client_session = None
 
     async def request_access_token(self):
-        # ------------------
-        # Fetch Access Token
-        # ------------------
         async with aiohttp.ClientSession() as session:
             async with session.request(
                     method="post",
@@ -35,11 +33,7 @@ class HalolinkConnection:
                 data = await response.json()
                 self.access_token = data['access_token']
 
-    # HALO GraphQL API Client
     async def create_client_session(self, add_local_bearer=False):
-        # ------------------------
-        # Create GraphQL Transport
-        # ------------------------
         transport = WebsocketsTransport(
             url=f"wss://{HALOLINK_HOST}/graphql",
             headers={"authorization": f"bearer {self.access_token}"},
@@ -49,9 +43,6 @@ class HalolinkConnection:
         if add_local_bearer:
             transport.headers["x-authentication-scheme"] = "LocalBearer"
 
-        # -----------------------------
-        # Create GraphQL Client Session
-        # -----------------------------
         client = Client(transport=transport)
         self.client_session = await client.connect_async()
 
