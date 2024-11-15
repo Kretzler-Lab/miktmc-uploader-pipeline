@@ -49,7 +49,7 @@ class HalolinkConnection:
     async def get_image_by_pk(self, primary_key: int) -> dict:
         image = await self.client_session.execute(
             gql("""
-            query test($pk: Int!) {
+            query imageByPk($pk: Int!) {
               imageByPk(pk:$pk) {
                 id
                 location
@@ -59,6 +59,41 @@ class HalolinkConnection:
             variable_values={"pk": primary_key}
         )
         return image
+
+    async def get_images_in_study(self, study_pk: int):
+        study = await self.client_session.execute(
+            gql("""
+            query studyByPk($pk: Int!) {
+              studyByPk(pk:$pk) {
+                pk
+                id
+                name
+                isSystem
+                isPublic
+                description
+                createdTime
+                permission
+                resolvedRole
+                studyImages {
+                  image {
+                    pk
+                    id
+                    location
+                    tag
+                    stain
+                    barcode
+                    permission
+                    resolvedRole
+                    modifiedTime
+                    createdTime
+                  }
+                }
+              }
+            }
+        """),
+        variable_values={"pk": study_pk}
+        )
+        return study['studyByPk']['studyImages']
 
     async def get_schema(self) -> dict:
         introspection_query = gql.gql(
