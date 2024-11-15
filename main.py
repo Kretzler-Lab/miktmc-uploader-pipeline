@@ -25,9 +25,9 @@ class Main:
         study = await self.halolink_connection.get_study_images_by_pk(study_id)
         print(study)
 
-    async def print_halolink_images_by_biopsy_id(self, study_id: int, biopsy_id: str):
+    async def print_curegn_inbox_images_by_biopsy_id(self, biopsy_id: str):
         await self.connect_to_halolink()
-        images = await self.halolink_service.get_images_by_biopsy_id(study_id, biopsy_id)
+        images = await self.halolink_service.get_curegn_inbox_images_by_biopsy_id(biopsy_id)
         print(images)
 
     async def print_halolink_schema(self):
@@ -75,11 +75,8 @@ if __name__ == "__main__":
     elif args.api_source == "halolink":
         if args.image_id:
             asyncio.run(main.print_halolink_image_info(int(args.image_id)))
-        if args.study_id:
-            if args.biopsy_id:
-                asyncio.run(main.print_halolink_images_by_biopsy_id(int(args.study_id), args.biopsy_id))
-            else:
-                asyncio.run(main.print_halolink_images(args.study_id))
+        elif args.biopsy_id:
+            asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
             asyncio.run(main.connect_to_halolink())
             print(main.halolink_connection.access_token)
