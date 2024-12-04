@@ -43,7 +43,7 @@ class HalolinkConnection:
         if add_local_bearer:
             transport.headers["x-authentication-scheme"] = "LocalBearer"
 
-        client = Client(transport=transport)
+        client = Client(transport=transport,execute_timeout=20)
         self.client_session = await client.connect_async()
 
     async def get_image_by_pk(self, primary_key: int) -> dict:
@@ -91,9 +91,68 @@ class HalolinkConnection:
               }
             }
         """),
-        variable_values={"pk": study_pk}
+            variable_values={"pk": study_pk}
         )
         return study['studyByPk']['studyImages']
+
+    async def get_study_info(self, study_pk: int):
+        study = await self.client_session.execute(
+            gql("""
+        query studyByPk($pk: Int!) {
+          studyByPk(pk:$pk) {
+            pk
+            id
+            name
+            isSystem
+            isPublic
+            description
+            createdTime
+            permission
+            resolvedRole
+          }
+        }
+    """),
+            variable_values={"pk": study_pk}
+        )
+        return study['studyByPk']
+
+    #NOTE: This mutation uses the internal IDs NOT the integer primary keys.
+    async def move_image(self, image_id: str, src_study_id: str, dest_study_id: str):
+        response = await self.client_session.execute(
+            gql("""
+             mutation($study_id: ID!, $image_id: ID!, $src_study_id: ID!){
+                  moveImageToStudy(input: {
+                    imageId: $image_id
+                    studyId: $study_id
+                    sourceStudyId: $src_study_id 
+                  })
+            {
+                mutated {
+                  node {
+                study {
+                studyImages {
+                  image {
+                    pk
+                    id
+                    location
+                    tag
+                    stain
+                    barcode
+                    permission
+                    resolvedRole
+                    modifiedTime
+                    createdTime
+                  }
+                }
+                }
+                  }
+                }
+              }
+              }
+              """),
+            variable_values={"image_id": image_id, "study_id": dest_study_id, "src_study_id": src_study_id}
+        )
+        return response
 
     async def get_schema(self) -> dict:
         introspection_query = gql.gql(
