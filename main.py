@@ -80,19 +80,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(main.print_move_image_result('SW1hZ2U6NjA3NDI=', 'U3R1ZHk6OTU4MA==', 'U3R1ZHk6OTU3NQ=='))
-
-    #asyncio.run(main.print_study_info(9575))
-
-    # if args.api_source == "redcap":
-    #     main.print_redcap_data_biopsy_id(args.biopsy_id)
-    # elif args.api_source == "halolink":
-    #     if args.image_id:
-    #         asyncio.run(main.print_halolink_image_info(int(args.image_id)))
-    #     elif args.biopsy_id:
-    #         asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
-    #     elif args.print_token:
-    #         asyncio.run(main.connect_to_halolink())
-    #         print(main.halolink_connection.access_token)
-    #     else:
-    #         asyncio.run(main.print_halolink_schema())
+    if args.api_source == "redcap":
+        main.print_redcap_data_biopsy_id(args.biopsy_id)
+    elif args.api_source == "halolink":
+        if args.image_id:
+            asyncio.run(main.print_halolink_image_info(int(args.image_id)))
+        elif args.biopsy_id:
+            asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
+        elif args.print_token:
+            asyncio.run(main.connect_to_halolink())
+            print(main.halolink_connection.access_token)
+        else:
+            asyncio.run(main.print_halolink_schema())
