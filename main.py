@@ -22,13 +22,23 @@ class Main:
 
     async def print_halolink_images(self, study_id: int):
         await self.connect_to_halolink()
-        study = await self.halolink_connection.get_study_images_by_pk(study_id)
+        study = await self.halolink_connection.get_images_in_study(study_id)
+        print(study)
+
+    async def print_study_info(self, study_id: int):
+        await self.connect_to_halolink()
+        study = await self.halolink_connection.get_study_info(study_id)
         print(study)
 
     async def print_curegn_inbox_images_by_biopsy_id(self, biopsy_id: str):
         await self.connect_to_halolink()
         images = await self.halolink_service.get_curegn_inbox_images_by_biopsy_id(biopsy_id)
         print(images)
+
+    async def print_move_image_result(self, image_id: str, src_study_id: str, dest_study_id: str):
+        await self.connect_to_halolink()
+        result = await self.halolink_connection.move_image(image_id, src_study_id, dest_study_id)
+        print(result)
 
     async def print_halolink_schema(self):
         await self.connect_to_halolink()
