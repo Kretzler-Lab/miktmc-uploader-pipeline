@@ -23,7 +23,6 @@ class HLField(Enum):
     LEVEL = {"id": "U3lzdGVtRmllbGQ6MTQ=", "name": "Level"}
 
 
-
 class HalolinkConnection:
 
     def __init__(self):
