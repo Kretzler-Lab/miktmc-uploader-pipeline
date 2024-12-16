@@ -1,6 +1,6 @@
 import asyncio
 from lib.redcap_connection import RedcapConnection
-from lib.halolink_connection import HalolinkConnection
+from lib.halolink_connection import HalolinkConnection, HLField
 from services.halolink_service import HalolinkService
 import argparse
 
@@ -34,6 +34,12 @@ class Main:
         await self.connect_to_halolink()
         images = await self.halolink_service.get_curegn_inbox_images_by_biopsy_id(biopsy_id)
         print(images)
+
+    async def print_set_image_fields_result(self, image_id: str):
+        await self.connect_to_halolink()
+        updates = [{"field_enum": HLField.STUDY_ID, "value": "TestStudy"}, {"field_enum": HLField.DISEASE, "value": "CKD"}]
+        result = await self.halolink_connection.set_image_fields(image_id, updates, "ZTestStudy")
+        print(result)
 
     async def print_move_image_result(self, image_id: str, src_study_id: str, dest_study_id: str):
         await self.connect_to_halolink()
@@ -79,7 +85,6 @@ if __name__ == "__main__":
         action='store_true'
     )
     args = parser.parse_args()
-
     if args.api_source == "redcap":
         main.print_redcap_data_biopsy_id(args.biopsy_id)
     elif args.api_source == "halolink":

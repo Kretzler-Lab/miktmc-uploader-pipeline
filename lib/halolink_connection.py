@@ -4,8 +4,23 @@ import aiohttp
 from gql import Client
 from gql import gql
 from gql.transport.websockets import WebsocketsTransport
+from enum import Enum
 
 HALOLINK_HOST = "dpr.niddk.nih.gov"
+
+
+class HLField(Enum):
+    STUDY_ID = {"id": "U3lzdGVtRmllbGQ6Mw==", "name": "StudyID"}
+    ORGAN = {"id": "U3lzdGVtRmllbGQ6MjE=", "name": "Organ"}
+    IMAGE_TYPE = {"id": "U3lzdGVtRmllbGQ6MTU=", "name": "Image_Type"}
+    BIOPSY_DATE = {"id": "U3lzdGVtRmllbGQ6Ng==", "name": "Biopsy_Date"}
+    NPT_PATIENT_STUDY_ID = {"id": "U3lzdGVtRmllbGQ6OQ==", "name": "NPT_PatientStudyID"}
+    CGN_PATIENT_STUDY_ID = {"id": "U3lzdGVtRmllbGQ6MTA=", "name": "CGN_PatientStudyID"}
+    DISEASE = {"id": "U3lzdGVtRmllbGQ6MTE=", "name": "Disease"}
+    BIOPSY_ID = {"id": "U3lzdGVtRmllbGQ6MTI=", "name": "BiopsyID"}
+    TISSUE_COMMENT = {"id": "U3lzdGVtRmllbGQ6MjI=", "name": "Tissue_Comment"}
+    EVENT_TYPE = {"id": "U3lzdGVtRmllbGQ6MTY=", "name": "Event_Type"}
+    LEVEL = {"id": "U3lzdGVtRmllbGQ6MTQ=", "name": "Level"}
 
 
 class HalolinkConnection:
@@ -43,7 +58,7 @@ class HalolinkConnection:
         if add_local_bearer:
             transport.headers["x-authentication-scheme"] = "LocalBearer"
 
-        client = Client(transport=transport,execute_timeout=20)
+        client = Client(transport=transport, execute_timeout=20)
         self.client_session = await client.connect_async()
 
     async def get_image_by_pk(self, primary_key: int) -> dict:
@@ -53,6 +68,21 @@ class HalolinkConnection:
               imageByPk(pk:$pk) {
                 id
                 location
+                barcode
+                fieldValues {
+                    pk
+                    id
+                    value
+                    type
+                    string
+                    text
+                    systemField {
+                       pk
+                       id
+                       name
+                       type
+                    }
+                }
               }
             }
         """),
@@ -154,59 +184,44 @@ class HalolinkConnection:
         )
         return response
 
-    async def get_schema(self) -> dict:
-        introspection_query = gql.gql(
-            """
-            query IntrospectionQuery {
-                __schema {
-                    queryType { name }
-                    mutationType { name }
-                    subscriptionType { name }
-                    types {
-                        ...FullType
+    async def set_image_fields(self, image_id: str, field_updates: list):
+        update_string = ""
+        for field_update in field_updates:
+            update_string = update_string + f",{{ operation: SET, systemFieldId: \"{field_update['field_enum'].value['id']}\", newValue: \"{field_update['value']}\"}}"
+        update_string = update_string[1:]
+        response = await self.client_session.execute(
+            gql("""
+             mutation($image_id: ID!){
+                  updateImageFieldValues (input: {
+                    imageId: $image_id
+                    updates: [
+                        """
+                        + update_string +
+                        """
+                    ]
+                  })
+            {
+                mutated {
+                  node {
+                    pk
+                    id
+                    value
+                    type
+                    string
+                    text
+                    systemField {
+                       pk
+                       id
+                       name
+                       type
                     }
+                  }
                 }
-            }
-        
-            fragment FullType on __Type {
-                kind
-                name
-                description
-                fields(includeDeprecated: true) {
-                    name
-                    description
-                    args {
-                        name
-                        description
-                        type {
-                            ...TypeRef
-                        }
-                    }
-                    type {
-                        ...TypeRef
-                    }
                 }
-            }
-        
-            fragment TypeRef on __Type {
-                kind
-                name
-                ofType {
-                    kind
-                    name
-                    ofType {
-                        kind
-                        name
-                        ofType {
-                            kind
-                            name
-                        }
-                    }
                 }
-            }
-            """
+                """),
+            variable_values={"image_id": image_id}
         )
+        return response
 
-        result = await self.client_session.execute(introspection_query)
-        schema = result['__schema']
-        return schema
+
