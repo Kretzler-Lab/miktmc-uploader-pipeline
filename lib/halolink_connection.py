@@ -68,6 +68,7 @@ class HalolinkConnection:
               imageByPk(pk:$pk) {
                 id
                 location
+                tag
                 barcode
                 fieldValues {
                     pk
