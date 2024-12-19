@@ -70,6 +70,7 @@ class HalolinkConnection:
                 location
                 tag
                 barcode
+                stain
                 fieldValues {
                     pk
                     id
