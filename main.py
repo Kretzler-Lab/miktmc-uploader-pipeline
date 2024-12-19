@@ -52,7 +52,18 @@ class Main:
 
     def print_redcap_data_biopsy_id(self, biopsy_id: str):
         print(self.redcap_connection.get_by_biopsy_id(biopsy_id))
-
+    
+    async def verify_slide_counts(self, biopsy_id: str):
+        await self.connect_to_halolink()
+        halolink_slides = await self.halolink_service.get_curegn_inbox_images_by_biopsy_id(biopsy_id)
+        redcap_slides = self.redcap_connection.get_by_biopsy_id(biopsy_id)
+        numbarcodes = int(redcap_slides[0]['numbarcodes']) if redcap_slides[0]['numbarcodes'] else 0
+        if len(halolink_slides) == numbarcodes:
+            print("Slide counts match")
+        else:
+            print("Slide counts do not match.")
+        print("Halolink: " + str(len(halolink_slides)))
+        print("REDCap: " + str(numbarcodes))
 
 if __name__ == "__main__":
     main = Main()
@@ -67,6 +78,12 @@ if __name__ == "__main__":
         "-b",
         "--biopsy_id",
         required=False,
+    )
+    parser.add_argument(
+        "-c",
+        "--count",
+        required=False,
+        action='store_true'
     )
     parser.add_argument(
         "-i",
@@ -86,10 +103,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     if args.api_source == "redcap":
-        main.print_redcap_data_biopsy_id(args.biopsy_id)
+        if args.count:
+            asyncio.run(main.verify_slide_counts(args.biopsy_id))
+        else:
+            main.print_redcap_data_biopsy_id(args.biopsy_id)
     elif args.api_source == "halolink":
         if args.image_id:
             asyncio.run(main.print_halolink_image_info(int(args.image_id)))
+        elif args.count:
+            asyncio.run(main.verify_slide_counts(args.biopsy_id))
         elif args.biopsy_id:
             asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
