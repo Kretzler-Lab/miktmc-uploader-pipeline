@@ -5,6 +5,7 @@ from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
 from model.image_metadata import ImageMetadata
 from services.halolink_service import HalolinkService
+from services.pipeline_service import PipelineService
 import argparse
 
 from services.redcap_service import RedcapService
@@ -15,6 +16,7 @@ class Main:
         self.redcap_connection = RedcapConnection()
         self.halolink_connection = HalolinkConnection()
         self.halolink_service = HalolinkService(self.halolink_connection)
+        self.pipeline_service = PipelineService(self.halolink_connection, self.redcap_connection)
         self.redcap_service = RedcapService(self.redcap_connection)
 
     async def connect_to_halolink(self):
@@ -60,7 +62,11 @@ class Main:
         slides = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
         for slide in slides:
             pprint(vars(slide))
-
+    
+    async def verify_slide_counts(self, biopsy_id: str):
+        await self.connect_to_halolink()
+        result = await self.pipeline_service.compare_slide_counts(biopsy_id)
+        print("Slide counts match") if result else print("Slide counts do not match")
 
 if __name__ == "__main__":
     main = Main()
@@ -75,6 +81,12 @@ if __name__ == "__main__":
         "-b",
         "--biopsy_id",
         required=False,
+    )
+    parser.add_argument(
+        "-c",
+        "--count",
+        required=False,
+        action='store_true'
     )
     parser.add_argument(
         "-i",
@@ -94,10 +106,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     if args.api_source == "redcap":
-        main.print_redcap_data_biopsy_id(args.biopsy_id)
+        if args.count:
+            asyncio.run(main.verify_slide_counts(args.biopsy_id))
+        else:
+            main.print_redcap_data_biopsy_id(args.biopsy_id)
     elif args.api_source == "halolink":
         if args.image_id:
             asyncio.run(main.print_halolink_image_info(int(args.image_id)))
+        elif args.count:
+            asyncio.run(main.verify_slide_counts(args.biopsy_id))
         elif args.biopsy_id:
             asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
