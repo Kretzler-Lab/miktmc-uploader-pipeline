@@ -1,9 +1,14 @@
 import asyncio
+from pprint import pprint
+
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
+from model.image_metadata import ImageMetadata
 from services.halolink_service import HalolinkService
 from services.pipeline_service import PipelineService
 import argparse
+
+from services.redcap_service import RedcapService
 
 
 class Main:
@@ -12,6 +17,7 @@ class Main:
         self.halolink_connection = HalolinkConnection()
         self.halolink_service = HalolinkService(self.halolink_connection)
         self.pipeline_service = PipelineService(self.halolink_connection, self.redcap_connection)
+        self.redcap_service = RedcapService(self.redcap_connection)
 
     async def connect_to_halolink(self):
         await self.halolink_connection.request_access_token()
@@ -53,7 +59,9 @@ class Main:
         print(self.halolink_connection.get_schema())
 
     def print_redcap_data_biopsy_id(self, biopsy_id: str):
-        print(self.redcap_connection.get_by_biopsy_id(biopsy_id))
+        slides = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
+        for slide in slides:
+            pprint(vars(slide))
     
     async def verify_slide_counts(self, biopsy_id: str):
         await self.connect_to_halolink()
