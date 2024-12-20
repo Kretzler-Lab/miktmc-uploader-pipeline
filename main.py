@@ -2,6 +2,7 @@ import asyncio
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
 from services.halolink_service import HalolinkService
+from services.pipeline_service import PipelineService
 import argparse
 
 
@@ -10,6 +11,7 @@ class Main:
         self.redcap_connection = RedcapConnection()
         self.halolink_connection = HalolinkConnection()
         self.halolink_service = HalolinkService(self.halolink_connection)
+        self.pipeline_service = PipelineService(self.halolink_connection, self.redcap_connection)
 
     async def connect_to_halolink(self):
         await self.halolink_connection.request_access_token()
@@ -55,15 +57,8 @@ class Main:
     
     async def verify_slide_counts(self, biopsy_id: str):
         await self.connect_to_halolink()
-        halolink_slides = await self.halolink_service.get_curegn_inbox_images_by_biopsy_id(biopsy_id)
-        redcap_slides = self.redcap_connection.get_by_biopsy_id(biopsy_id)
-        numbarcodes = int(redcap_slides[0]['numbarcodes']) if redcap_slides[0]['numbarcodes'] else 0
-        if len(halolink_slides) == numbarcodes:
-            print("Slide counts match")
-        else:
-            print("Slide counts do not match.")
-        print("Halolink: " + str(len(halolink_slides)))
-        print("REDCap: " + str(numbarcodes))
+        result = await self.pipeline_service.compare_slide_counts(biopsy_id)
+        print("Slide counts match") if result else print("Slide counts do not match")
 
 if __name__ == "__main__":
     main = Main()
