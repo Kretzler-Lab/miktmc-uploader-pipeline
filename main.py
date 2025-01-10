@@ -59,9 +59,11 @@ class Main:
         print(self.halolink_connection.get_schema())
 
     def print_redcap_data_biopsy_id(self, biopsy_id: str):
-        slides = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
-        for slide in slides:
+        redcap_metadata = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
+        pprint(vars(redcap_metadata["parent_metadata"]))
+        for slide in redcap_metadata["images"]:
             pprint(vars(slide))
+            pprint(slide.get_halolink_updates())
     
     async def verify_slide_counts(self, biopsy_id: str):
         await self.connect_to_halolink()
