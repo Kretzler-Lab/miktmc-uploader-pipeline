@@ -13,3 +13,4 @@ class PipelineService:
         redcap_slides = self.redcap_connection.get_by_biopsy_id(biopsy_id)
         numbarcodes = int(redcap_slides[0]['numbarcodes']) if redcap_slides[0]['numbarcodes'] else 0
         return len(halolink_slides) == numbarcodes
+

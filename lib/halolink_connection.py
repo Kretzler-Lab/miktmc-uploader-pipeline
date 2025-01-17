@@ -148,6 +148,36 @@ class HalolinkConnection:
         )
         return study['studyByPk']
 
+    async def update_stain(self, image_id: str, stain: str):
+        response = await self.client_session.execute(
+            gql("""
+            mutation($image_id: ID!, $stain: String) {
+                changeImageProperties(input: {
+                    imageId: $image_id,
+                    stain: $stain
+                })
+                {
+                mutated {
+                  node {
+                    pk
+                    id
+                    location
+                    tag
+                    stain
+                    barcode
+                    permission
+                    resolvedRole
+                    modifiedTime
+                    createdTime
+                  }
+                } 
+                }
+                }
+            """), variable_values={"image_id": image_id, "stain": stain}
+        )
+        return response
+
+
     #NOTE: This mutation uses the internal IDs NOT the integer primary keys.
     async def move_image(self, image_id: str, src_study_id: str, dest_study_id: str):
         response = await self.client_session.execute(
