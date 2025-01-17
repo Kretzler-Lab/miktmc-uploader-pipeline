@@ -4,6 +4,7 @@ from pprint import pprint
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
 from model.image_metadata import ImageMetadata
+from model.redcap_metadata import RedcapMetadata
 from services.halolink_service import HalolinkService
 from services.pipeline_service import PipelineService
 import argparse

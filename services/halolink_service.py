@@ -1,6 +1,7 @@
 from array import array
 
 from lib.halolink_connection import HalolinkConnection
+from model.image_metadata import ImageMetadata
 
 CUREGN_INBOX_ID = 9783
 
@@ -21,3 +22,8 @@ class HalolinkService:
             if biopsy_id + "_" in image['image']['tag']:
                 filtered_images.append(image)
         return filtered_images
+
+    async def update_image_metadata(self, image_id: str, image_metadata: ImageMetadata):
+        results = [await self.halolink_connection.update_stain(image_id, image_metadata.slide_stain),
+                   await self.halolink_connection.set_image_fields(image_id, image_metadata.get_halolink_updates())]
+        return results
