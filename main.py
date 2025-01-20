@@ -4,6 +4,7 @@ from pprint import pprint
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
 from model.image_metadata import ImageMetadata
+from model.redcap_metadata import RedcapMetadata
 from services.halolink_service import HalolinkService
 from services.pipeline_service import PipelineService
 import argparse
@@ -45,7 +46,8 @@ class Main:
 
     async def print_set_image_fields_result(self, image_id: str):
         await self.connect_to_halolink()
-        updates = [{"field_enum": HLField.STUDY_ID, "value": "TestStudy"}, {"field_enum": HLField.DISEASE, "value": "CKD"}]
+        updates = [{"field_enum": HLField.STUDY_ID, "value": "TestStudy"},
+                   {"field_enum": HLField.DISEASE, "value": "CKD"}]
         result = await self.halolink_connection.set_image_fields(image_id, updates, "ZTestStudy")
         print(result)
 
@@ -64,11 +66,17 @@ class Main:
         for slide in redcap_metadata["images"]:
             pprint(vars(slide))
             pprint(slide.get_halolink_updates())
-    
+
     async def verify_slide_counts(self, biopsy_id: str):
         await self.connect_to_halolink()
         result = await self.pipeline_service.compare_slide_counts(biopsy_id)
         print("Slide counts match") if result else print("Slide counts do not match")
+
+    async def update_stain(self, image_id: str, stain: str):
+        await self.connect_to_halolink()
+        result = await self.halolink_connection.update_stain(image_id, stain)
+        print(result)
+
 
 if __name__ == "__main__":
     main = Main()
