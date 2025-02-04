@@ -67,9 +67,12 @@ class Main:
             pprint(vars(slide))
             pprint(slide.get_halolink_updates())
 
-    async def verify_slide_counts(self, biopsy_id: str):
+    async def verify_slide_counts(self, biopsy_id: str, slide_type: str):
         await self.connect_to_halolink()
-        result = await self.pipeline_service.compare_slide_counts(biopsy_id)
+        if slide_type == "EM":
+            result = await self.pipeline_service.compare_em_slide_counts(biopsy_id)
+        else:
+            result = await self.pipeline_service.compare_slide_counts(biopsy_id)
         print("Slide counts match") if result else print("Slide counts do not match")
 
     async def update_stain(self, image_id: str, stain: str):
@@ -85,7 +88,7 @@ if __name__ == "__main__":
         "-a",
         "--api_source",
         choices=["redcap", "halolink"],
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "-b",
@@ -95,8 +98,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c",
         "--count",
+        choices=["EM", "WSI"],
         required=False,
-        action='store_true'
     )
     parser.add_argument(
         "-i",
@@ -115,16 +118,13 @@ if __name__ == "__main__":
         action='store_true'
     )
     args = parser.parse_args()
-    if args.api_source == "redcap":
-        if args.count:
-            asyncio.run(main.verify_slide_counts(args.biopsy_id))
-        else:
-            main.print_redcap_data_biopsy_id(args.biopsy_id)
+    if args.count:
+        asyncio.run(main.verify_slide_counts(args.biopsy_id, args.count))
+    elif args.api_source == "redcap":
+        main.print_redcap_data_biopsy_id(args.biopsy_id)
     elif args.api_source == "halolink":
         if args.image_id:
             asyncio.run(main.print_halolink_image_info(int(args.image_id)))
-        elif args.count:
-            asyncio.run(main.verify_slide_counts(args.biopsy_id))
         elif args.biopsy_id:
             asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
