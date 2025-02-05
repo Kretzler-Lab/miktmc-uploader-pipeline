@@ -14,3 +14,8 @@ class PipelineService:
         numbarcodes = int(redcap_slides[0]['numbarcodes']) if redcap_slides[0]['numbarcodes'] else 0
         return len(halolink_slides) == numbarcodes
 
+    async def compare_em_slide_counts(self, biopsy_id: str):
+        halolink_slides = await self.halolink_service.get_escrow_1_images_by_biopsy_id(biopsy_id)
+        redcap_slides = self.redcap_connection.get_by_biopsy_id(biopsy_id)
+        numems = int(redcap_slides[0]['numems_qc']) if redcap_slides[0]['numems_qc'] else 0
+        return len(halolink_slides) == numems
