@@ -53,12 +53,13 @@ class HalolinkConnection:
             url=f"wss://{HALOLINK_HOST}/graphql",
             headers={"authorization": f"bearer {self.access_token}"},
             subprotocols=[WebsocketsTransport.APOLLO_SUBPROTOCOL],
-            ssl=ssl.SSLContext(ssl.PROTOCOL_TLS)
+            ssl=ssl.SSLContext(ssl.PROTOCOL_TLS),
+            connect_timeout=40
         )
         if add_local_bearer:
             transport.headers["x-authentication-scheme"] = "LocalBearer"
 
-        client = Client(transport=transport, execute_timeout=20)
+        client = Client(transport=transport, execute_timeout=40)
         self.client_session = await client.connect_async()
 
     async def get_image_by_pk(self, primary_key: int) -> dict:
@@ -100,12 +101,6 @@ class HalolinkConnection:
                 pk
                 id
                 name
-                isSystem
-                isPublic
-                description
-                createdTime
-                permission
-                resolvedRole
                 studyImages {
                   image {
                     pk
@@ -114,10 +109,12 @@ class HalolinkConnection:
                     tag
                     stain
                     barcode
-                    permission
-                    resolvedRole
-                    modifiedTime
-                    createdTime
+                                    fieldValues {
+                                      value
+                                      systemField {
+                                        name
+                                      }
+                }
                   }
                 }
               }

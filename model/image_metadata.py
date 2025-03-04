@@ -4,17 +4,24 @@ from model.redcap_metadata import RedcapMetadata
 
 
 class ImageMetadata:
-    def __init__(self, parent_metadata: RedcapMetadata):
+    def __init__(self, parent_metadata: RedcapMetadata = None):
         self.parent_metadata = parent_metadata
-        self.level = None
-        self.barcode = None
-        self.slide_stain = None
-        self.image_type = 'WSImage'
+        self.level = ""
+        self.barcode = ""
+        self.slide_stain = ""
+        self.image_type = ""
+        self.in_error = False
+        self.error_message = ""
 
-    def fill_with_redcap_result(self, redcap_result: dict, slide_num: int):
+    def fill_wsi_with_redcap_result(self, redcap_result: dict, slide_num: int):
         self.level = redcap_result["slidelevel" + str(slide_num)]
+        self.image_type = 'WSImage'
         self.barcode = redcap_result["slidebarcode" + str(slide_num)]
-        self.slide_stain = get_stain(int(redcap_result["slidestain" + str(slide_num)]))
+        if redcap_result["slidestain" + str(slide_num)]:
+            self.slide_stain = get_stain(int(redcap_result["slidestain" + str(slide_num)]))
+        else:
+            self.slide_stain = ""
+
 
     def get_halolink_updates(self):
         return [
@@ -30,6 +37,29 @@ class ImageMetadata:
             {"field_enum": HLField.BIOPSY_DATE, "value": self.parent_metadata.biopsy_date},
             {"field_enum": HLField.BIOPSY_ID, "value": self.parent_metadata.biopsy_id},
         ]
+
+    def get_metadata_header_string(self):
+        field_str = "Barcode,Stain"
+        hl_updates = self.get_halolink_updates()
+        for field in hl_updates:
+            field_str = field_str + "," + field["field_enum"].value["name"]
+        return field_str
+
+    def get_metadata_update_string(self):
+        hl_updates = self.get_halolink_updates()
+        field_list = ["barcode:" + str(self.barcode), "stain:" + str(self.slide_stain)]
+        for field in hl_updates:
+            field_list.append(field["field_enum"].value["name"] + ":" + str(field["value"]))
+        return ",".join(field_list)
+
+    def get_metadata_update_string_plain(self):
+        hl_updates = self.get_halolink_updates()
+        field_list = [str(self.barcode), str(self.slide_stain)]
+        for field in hl_updates:
+            field_list.append(str(field["value"]))
+        update_string = ",".join(field_list)
+        update_string = update_string + "," + self.error_message
+        return update_string
 
 
 

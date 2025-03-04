@@ -3,9 +3,9 @@ from pprint import pprint
 
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
+from services.halolink_service import parse_biopsy_id, HalolinkService, INCOMING_CUREGN_ID, ESCROW_1_ID
 from model.image_metadata import ImageMetadata
 from model.redcap_metadata import RedcapMetadata
-from services.halolink_service import HalolinkService
 from services.pipeline_service import PipelineService
 import argparse
 
@@ -75,6 +75,20 @@ class Main:
             result = await self.pipeline_service.compare_slide_counts(biopsy_id)
         print("Slide counts match") if result else print("Slide counts do not match")
 
+    async def curegn_incoming_metadata_dry_run(self):
+        await self.connect_to_halolink()
+        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(INCOMING_CUREGN_ID)
+        print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string())
+        for file_name, image_metadata in redcap_metadata.items():
+            print(file_name + "," + image_metadata.get_metadata_update_string_plain())
+
+    async def escrow_1_metadata_dry_run(self):
+        await self.connect_to_halolink()
+        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(ESCROW_1_ID)
+        print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string())
+        for file_name, image_metadata in redcap_metadata.items():
+            print(file_name + "," + image_metadata.get_metadata_update_string_plain())
+
     async def update_stain(self, image_id: str, stain: str):
         await self.connect_to_halolink()
         result = await self.halolink_connection.update_stain(image_id, stain)
@@ -124,7 +138,10 @@ if __name__ == "__main__":
         main.print_redcap_data_biopsy_id(args.biopsy_id)
     elif args.api_source == "halolink":
         if args.image_id:
-            asyncio.run(main.print_halolink_image_info(int(args.image_id)))
+            #asyncio.run(main.print_halolink_image_info(int(args.image_id)))
+            #asyncio.run(main.update_stain(args.image_id, "Test Stain with Becky"))
+            asyncio.run(main.escrow_1_metadata_dry_run())
+            #asyncio.run(main.curegn_incoming_metadata_dry_run())
         elif args.biopsy_id:
             asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
