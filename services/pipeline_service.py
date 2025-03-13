@@ -1,17 +1,18 @@
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
+from lib.uploader_connection import UploaderConnection
 from model.image_metadata import ImageMetadata
 from model.redcap_metadata import RedcapMetadata
 from services.halolink_service import HalolinkService, parse_biopsy_id
 from services.redcap_service import RedcapService
-from pprint import pprint
 
 class PipelineService:
-    def __init__(self, halolink_connection: HalolinkConnection, redcap_connection: RedcapConnection):
+    def __init__(self, halolink_connection: HalolinkConnection, redcap_connection: RedcapConnection, uploader_connection: UploaderConnection):
         self.halolink_connection = halolink_connection
         self.redcap_connection = redcap_connection
         self.halolink_service = HalolinkService(self.halolink_connection)
         self.redcap_service = RedcapService(self.redcap_connection)
+        self.uploader_connection = uploader_connection
         
     async def compare_slide_counts(self, biopsy_id: str):
         halolink_slides = await self.halolink_service.get_incoming_curegn_images_by_biopsy_id(biopsy_id)
@@ -25,7 +26,7 @@ class PipelineService:
         numems = int(redcap_slides[0]['numems_qc']) if redcap_slides[0]['numems_qc'] else 0
         return len(halolink_slides) == numems
 
-    async def get_metadata_for_images_in_study(self, study_id: int):
+    async def get_metadata_for_images_in_study(self, study_id: int, default_study: str):
         images = await self.halolink_connection.get_images_in_study(study_id)
         redcap_data = {}
         image_metadata = {}
@@ -44,7 +45,14 @@ class PipelineService:
             if not metadata_exists:
                 if biopsy_id not in redcap_data:
                     redcap_data[biopsy_id] = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
+
                 if redcap_data[biopsy_id]:
+                    # Get the study ID from the Uploader database. If it's blank, use the default
+                    if not redcap_data[biopsy_id]["parent_metadata"].study_id:
+                        study = self.uploader_connection.get_study_id_by_file_name(image["image"]["tag"])
+                        if study == "":
+                            study = default_study
+                        redcap_data[biopsy_id]["parent_metadata"].study_id = study
                     if is_wsi:
                         if "barcode" in image["image"]:
                             if image["image"]["barcode"] in redcap_data[biopsy_id]["wsi_images"]:

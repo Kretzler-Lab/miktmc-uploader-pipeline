@@ -3,6 +3,7 @@ from pprint import pprint
 
 from lib.redcap_connection import RedcapConnection
 from lib.halolink_connection import HalolinkConnection, HLField
+from lib.uploader_connection import UploaderConnection
 from services.halolink_service import parse_biopsy_id, HalolinkService, INCOMING_CUREGN_ID, ESCROW_1_ID
 from model.image_metadata import ImageMetadata
 from model.redcap_metadata import RedcapMetadata
@@ -16,9 +17,12 @@ class Main:
     def __init__(self):
         self.redcap_connection = RedcapConnection()
         self.halolink_connection = HalolinkConnection()
+        self.uploader_connection = UploaderConnection()
+        self.uploader_connection.get_mongo_connection()
         self.halolink_service = HalolinkService(self.halolink_connection)
-        self.pipeline_service = PipelineService(self.halolink_connection, self.redcap_connection)
+        self.pipeline_service = PipelineService(self.halolink_connection, self.redcap_connection, self.uploader_connection)
         self.redcap_service = RedcapService(self.redcap_connection)
+
 
     async def connect_to_halolink(self):
         await self.halolink_connection.request_access_token()
@@ -77,14 +81,14 @@ class Main:
 
     async def curegn_incoming_metadata_dry_run(self):
         await self.connect_to_halolink()
-        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(INCOMING_CUREGN_ID)
+        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(INCOMING_CUREGN_ID, "CureGN")
         print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string())
         for file_name, image_metadata in redcap_metadata.items():
             print(file_name + "," + image_metadata.get_metadata_update_string_plain())
 
     async def escrow_1_metadata_dry_run(self):
         await self.connect_to_halolink()
-        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(ESCROW_1_ID)
+        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(ESCROW_1_ID, "CureGN")
         print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string())
         for file_name, image_metadata in redcap_metadata.items():
             print(file_name + "," + image_metadata.get_metadata_update_string_plain())
@@ -140,8 +144,9 @@ if __name__ == "__main__":
         if args.image_id:
             #asyncio.run(main.print_halolink_image_info(int(args.image_id)))
             #asyncio.run(main.update_stain(args.image_id, "Test Stain with Becky"))
-            asyncio.run(main.escrow_1_metadata_dry_run())
-            #asyncio.run(main.curegn_incoming_metadata_dry_run())
+            #asyncio.run(main.escrow_1_metadata_dry_run())
+            #pprint(main.uploader_connection.get_study_id_by_file_name("3_7144_D_1sfd0005.jpg"))
+            asyncio.run(main.curegn_incoming_metadata_dry_run())
         elif args.biopsy_id:
             asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
