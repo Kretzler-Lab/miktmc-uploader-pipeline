@@ -103,6 +103,12 @@ if __name__ == "__main__":
     main = Main()
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "-d",
+        "--dry_run",
+        choices=["CI", "E1"],
+        required=False,
+    )
+    parser.add_argument(
         "-a",
         "--api_source",
         choices=["redcap", "halolink"],
@@ -136,17 +142,18 @@ if __name__ == "__main__":
         action='store_true'
     )
     args = parser.parse_args()
-    if args.count:
+    if args.dry_run:
+        if args.dry_run == "E1":
+            asyncio.run(main.escrow_1_metadata_dry_run())
+        elif args.dry_run == "CI":
+            asyncio.run(main.curegn_incoming_metadata_dry_run())
+    elif args.count:
         asyncio.run(main.verify_slide_counts(args.biopsy_id, args.count))
     elif args.api_source == "redcap":
         main.print_redcap_data_biopsy_id(args.biopsy_id)
     elif args.api_source == "halolink":
         if args.image_id:
-            #asyncio.run(main.print_halolink_image_info(int(args.image_id)))
-            #asyncio.run(main.update_stain(args.image_id, "Test Stain with Becky"))
-            #asyncio.run(main.escrow_1_metadata_dry_run())
-            #pprint(main.uploader_connection.get_study_id_by_file_name("3_7144_D_1sfd0005.jpg"))
-            asyncio.run(main.curegn_incoming_metadata_dry_run())
+            asyncio.run(main.print_halolink_image_info(int(args.image_id)))
         elif args.biopsy_id:
             asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
         elif args.print_token:
