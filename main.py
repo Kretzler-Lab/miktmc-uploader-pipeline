@@ -161,3 +161,5 @@ if __name__ == "__main__":
             print(main.halolink_connection.access_token)
         else:
             asyncio.run(main.print_halolink_schema())
+    else:
+        print("Please choose an option. Run with --help for a list of options.")
