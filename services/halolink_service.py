@@ -3,12 +3,6 @@ from array import array
 from lib.halolink_connection import HalolinkConnection
 from model.image_metadata import ImageMetadata
 
-INCOMING_CUREGN_ID = 9783
-ESCROW_1_ID = 9735
-ANNOTATION_TEST_ID = 9586
-COLLEEN_TEST_ID = 9580
-
-
 def parse_biopsy_id(image_name: str):
     split_image = image_name.split("_")
     return split_image[0] + "_" + split_image[1]

@@ -23,6 +23,14 @@ class HLField(Enum):
     LEVEL = {"id": "U3lzdGVtRmllbGQ6MTQ=", "name": "Level"}
 
 
+class HLStudy(Enum):
+    INCOMING_CUREGN = {"pk": 9783, "id": "U3R1ZHk6OTc4Mw=="}
+    ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ=="}
+    ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw=="}
+    ANNOTATION_TEST = {"pk": 9586, "id": ""}
+    COLLEEN_TEST_PK = {"pk": 9580, "id": ""}
+
+
 class HalolinkConnection:
 
     def __init__(self):

@@ -18,10 +18,7 @@ class UploaderConnection:
         database = mongo_client[self.database]
         self.mongo_session = database
 
-    def get_study_id_by_file_name(self, file_name: str):
-        result = self.mongo_session.packages.find_one({"files": {"$elemMatch": {"$and": [{"fileName": file_name}]}}}, {"_id": 0, "study": 1})
-        if result:
-            return result["study"]
-        else:
-            return ""
+    def get_record_by_file_name(self, file_name: str):
+        result = self.mongo_session.packages.find_one({"files": {"$elemMatch": {"$and": [{"fileName": file_name}]}}}, {"_id": 0, "study": 1, "packageType": 1})
+        return result
 

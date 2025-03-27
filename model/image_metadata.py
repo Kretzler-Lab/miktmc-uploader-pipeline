@@ -11,6 +11,7 @@ class ImageMetadata:
         self.slide_stain = ""
         self.image_type = ""
         self.in_error = False
+        self.missing_metadata = False
         self.error_message = ""
 
     def fill_wsi_with_redcap_result(self, redcap_result: dict, slide_num: int):
@@ -43,7 +44,7 @@ class ImageMetadata:
         hl_updates = self.get_halolink_updates()
         for field in hl_updates:
             field_str = field_str + "," + field["field_enum"].value["name"]
-        return field_str
+        return field_str + ",Error Message"
 
     def get_metadata_update_string(self):
         hl_updates = self.get_halolink_updates()
@@ -56,10 +57,36 @@ class ImageMetadata:
         hl_updates = self.get_halolink_updates()
         field_list = [str(self.barcode), str(self.slide_stain)]
         for field in hl_updates:
-            field_list.append(str(field["value"]))
+            if "," in field["value"]:
+                field_list.append("\"" + str(field["value"])+ "\"")
+            else:
+                field_list.append(str(field["value"]))
         update_string = ",".join(field_list)
-        update_string = update_string + "," + self.error_message
+        update_string = update_string + "," + "\"" + self.error_message + "\""
         return update_string
+
+    def validate_metadata(self):
+        validation_exemptions = ["error_message", "npt_patient_study_id", "cgn_patient_study_id", "em_count"]
+        fields = {}
+        missing_fields = []
+        # We only have to validate all of the image metadata if it's a WSI. Otherwise just check image type.
+        if self.image_type == "WSImage":
+            fields = vars(self)
+        else:
+            fields["image_type"] = self.image_type
+        fields = fields | vars(self.parent_metadata)
+        for name, value in fields.items():
+            if not name.startswith("__") and not callable(value) and name not in validation_exemptions:
+                if value is None or value == "":
+                    self.missing_metadata = True
+                    missing_fields.append(name)
+        if fields["npt_patient_study_id"] == "" and fields["cgn_patient_study_id"] == "":
+            self.missing_metadata = True
+            missing_fields.append("patient_study_id")
+        if self.missing_metadata:
+            self.error_message = self.error_message + "WARNING: field(s) " + ",".join(missing_fields) + " are/is missing."
+
+
 
 
 

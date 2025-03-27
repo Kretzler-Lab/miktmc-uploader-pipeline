@@ -1,10 +1,10 @@
 import asyncio
 from pprint import pprint
-
+import time
 from lib.redcap_connection import RedcapConnection
-from lib.halolink_connection import HalolinkConnection, HLField
+from lib.halolink_connection import HalolinkConnection, HLField, HLStudy
 from lib.uploader_connection import UploaderConnection
-from services.halolink_service import parse_biopsy_id, HalolinkService, INCOMING_CUREGN_ID, ESCROW_1_ID
+from services.halolink_service import parse_biopsy_id, HalolinkService
 from model.image_metadata import ImageMetadata
 from model.redcap_metadata import RedcapMetadata
 from services.pipeline_service import PipelineService
@@ -64,6 +64,25 @@ class Main:
         await self.connect_to_halolink()
         print(self.halolink_connection.get_schema())
 
+    async def test_add_metadata(self, image_id: str):
+        await self.connect_to_halolink()
+        parent_metadata = RedcapMetadata("123_45")
+        parent_metadata.organ = "Kidney"
+        parent_metadata.cgn_patient_study_id = "CGN_ID"
+        parent_metadata.disease = "FSGS"
+        parent_metadata.event_type = "Biopsy"
+        parent_metadata.biopsy_date = "2013-07-26"
+        parent_metadata.tissue_comment = "Tissue Comment"
+        parent_metadata.study_id = "CureGN"
+        image_metadata = ImageMetadata(parent_metadata)
+        image_metadata.slide_stain = "PAS"
+        image_metadata.image_type = "EM"
+        image_metadata.level = "2"
+        update_results = await self.halolink_connection.set_image_fields(image_id, image_metadata.get_halolink_updates())
+        await self.halolink_connection.update_stain(image_id, image_metadata.slide_stain)
+        pprint(update_results)
+
+
     def print_redcap_data_biopsy_id(self, biopsy_id: str):
         redcap_metadata = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
         pprint(vars(redcap_metadata["parent_metadata"]))
@@ -81,17 +100,19 @@ class Main:
 
     async def curegn_incoming_metadata_dry_run(self):
         await self.connect_to_halolink()
-        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(INCOMING_CUREGN_ID, "CureGN")
-        print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string())
-        for file_name, image_metadata in redcap_metadata.items():
-            print(file_name + "," + image_metadata.get_metadata_update_string_plain())
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, "CureGN", True)
 
     async def escrow_1_metadata_dry_run(self):
         await self.connect_to_halolink()
-        redcap_metadata = await self.pipeline_service.get_metadata_for_images_in_study(ESCROW_1_ID, "CureGN")
-        print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string())
-        for file_name, image_metadata in redcap_metadata.items():
-            print(file_name + "," + image_metadata.get_metadata_update_string_plain())
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.ESCROW_1, "CureGN", True)
+
+    async def attach_curegn_incoming_metadata(self):
+        await self.connect_to_halolink()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, "CureGN", False)
+
+    async def attach_escrow_1_metadata(self):
+        await self.connect_to_halolink()
+        await self.pipeline_service.get_metadata_for_images_in_study(ESCROW_1_PK, "CureGN", False)
 
     async def update_stain(self, image_id: str, stain: str):
         await self.connect_to_halolink()
@@ -146,7 +167,7 @@ if __name__ == "__main__":
         if args.dry_run == "E1":
             asyncio.run(main.escrow_1_metadata_dry_run())
         elif args.dry_run == "CI":
-            asyncio.run(main.curegn_incoming_metadata_dry_run())
+            asyncio.run(main.attach_curegn_incoming_metadata())
     elif args.count:
         asyncio.run(main.verify_slide_counts(args.biopsy_id, args.count))
     elif args.api_source == "redcap":
