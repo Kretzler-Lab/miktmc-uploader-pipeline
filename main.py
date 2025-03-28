@@ -23,7 +23,6 @@ class Main:
         self.pipeline_service = PipelineService(self.halolink_connection, self.redcap_connection, self.uploader_connection)
         self.redcap_service = RedcapService(self.redcap_connection)
 
-
     async def connect_to_halolink(self):
         await self.halolink_connection.request_access_token()
         await self.halolink_connection.create_client_session()
@@ -33,55 +32,10 @@ class Main:
         image = await self.halolink_connection.get_image_by_pk(image_id)
         print(image)
 
-    async def print_halolink_images(self, study_id: int):
+    async def print_study_info(self, study_pk: int):
         await self.connect_to_halolink()
-        study = await self.halolink_connection.get_images_in_study(study_id)
+        study = await self.halolink_connection.get_study_info(study_pk)
         print(study)
-
-    async def print_study_info(self, study_id: int):
-        await self.connect_to_halolink()
-        study = await self.halolink_connection.get_study_info(study_id)
-        print(study)
-
-    async def print_curegn_inbox_images_by_biopsy_id(self, biopsy_id: str):
-        await self.connect_to_halolink()
-        images = await self.halolink_service.get_curegn_inbox_images_by_biopsy_id(biopsy_id)
-        print(images)
-
-    async def print_set_image_fields_result(self, image_id: str):
-        await self.connect_to_halolink()
-        updates = [{"field_enum": HLField.STUDY_ID, "value": "TestStudy"},
-                   {"field_enum": HLField.DISEASE, "value": "CKD"}]
-        result = await self.halolink_connection.set_image_fields(image_id, updates, "ZTestStudy")
-        print(result)
-
-    async def print_move_image_result(self, image_id: str, src_study_id: str, dest_study_id: str):
-        await self.connect_to_halolink()
-        result = await self.halolink_connection.move_image(image_id, src_study_id, dest_study_id)
-        print(result)
-
-    async def print_halolink_schema(self):
-        await self.connect_to_halolink()
-        print(self.halolink_connection.get_schema())
-
-    async def test_add_metadata(self, image_id: str):
-        await self.connect_to_halolink()
-        parent_metadata = RedcapMetadata("123_45")
-        parent_metadata.organ = "Kidney"
-        parent_metadata.cgn_patient_study_id = "CGN_ID"
-        parent_metadata.disease = "FSGS"
-        parent_metadata.event_type = "Biopsy"
-        parent_metadata.biopsy_date = "2013-07-26"
-        parent_metadata.tissue_comment = "Tissue Comment"
-        parent_metadata.study_id = "CureGN"
-        image_metadata = ImageMetadata(parent_metadata)
-        image_metadata.slide_stain = "PAS"
-        image_metadata.image_type = "EM"
-        image_metadata.level = "2"
-        update_results = await self.halolink_connection.set_image_fields(image_id, image_metadata.get_halolink_updates())
-        await self.halolink_connection.update_stain(image_id, image_metadata.slide_stain)
-        pprint(update_results)
-
 
     def print_redcap_data_biopsy_id(self, biopsy_id: str):
         redcap_metadata = self.redcap_service.get_image_metadata_by_biopsy_id(biopsy_id)
@@ -112,54 +66,59 @@ class Main:
 
     async def attach_escrow_1_metadata(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(ESCROW_1_PK, "CureGN", False)
-
-    async def update_stain(self, image_id: str, stain: str):
-        await self.connect_to_halolink()
-        result = await self.halolink_connection.update_stain(image_id, stain)
-        print(result)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.ESCROW_1, "CureGN", False)
 
 
 if __name__ == "__main__":
     main = Main()
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog='MiKTMC Image Pipeline',
+        description='Queries the HALOLink and REDCap APIs and allows the attaching of metadata and movement of HALOLink images for final ingestion.',
+    )
     parser.add_argument(
         "-d",
         "--dry_run",
         choices=["CI", "E1"],
+        help='Execute a dry run of attaching metadata and moving images. Prints metadata and final action. Options are the source folder.',
         required=False,
     )
     parser.add_argument(
         "-a",
-        "--api_source",
-        choices=["redcap", "halolink"],
+        "--attach",
+        help='Attach REDCap metadata to all HALOLink images in source folder and move images to appropriate escrow folder. Options are the source folder. Prints metadata and action taken.',
+        choices=["CI", "E1"],
         required=False,
     )
     parser.add_argument(
         "-b",
         "--biopsy_id",
+        help='Print biopsy information from REDCap',
         required=False,
     )
     parser.add_argument(
         "-c",
         "--count",
         choices=["EM", "WSI"],
+        help='Verifies the number of image in HALOLink match the number of images from REDCap. Requires biopsy_id option.',
         required=False,
     )
     parser.add_argument(
         "-i",
         "--image_id",
+        help='Prints image information from HALOLink.',
         required=False,
     )
     parser.add_argument(
         "-s",
-        "--study_id",
+        "--study_pk",
+        help='Given a study PK, prints study/folder information from HALOLink. Useful for getting the ID from the PK.',
         required=False,
     )
     parser.add_argument(
         "-t",
         "--print_token",
         required=False,
+        help='Prints a HALOLink access token. (e.g. to use in a graphQL client)',
         action='store_true'
     )
     args = parser.parse_args()
@@ -167,20 +126,22 @@ if __name__ == "__main__":
         if args.dry_run == "E1":
             asyncio.run(main.escrow_1_metadata_dry_run())
         elif args.dry_run == "CI":
+            asyncio.run(main.curegn_incoming_metadata_dry_run())
+    elif args.update:
+        if args.update == "E1":
+            asyncio.run(main.attach_escrow_1_metadata())
+        elif args.update == "CI":
             asyncio.run(main.attach_curegn_incoming_metadata())
     elif args.count:
         asyncio.run(main.verify_slide_counts(args.biopsy_id, args.count))
-    elif args.api_source == "redcap":
+    elif args.biopsy_id:
         main.print_redcap_data_biopsy_id(args.biopsy_id)
-    elif args.api_source == "halolink":
-        if args.image_id:
-            asyncio.run(main.print_halolink_image_info(int(args.image_id)))
-        elif args.biopsy_id:
-            asyncio.run(main.print_curegn_inbox_images_by_biopsy_id(args.biopsy_id))
-        elif args.print_token:
-            asyncio.run(main.connect_to_halolink())
-            print(main.halolink_connection.access_token)
-        else:
-            asyncio.run(main.print_halolink_schema())
+    elif args.image_id:
+        asyncio.run(main.print_halolink_image_info(int(args.image_id)))
+    elif args.study_pk:
+        asyncio.run(main.print_study_info(args.study_pk))
+    elif args.print_token:
+        asyncio.run(main.connect_to_halolink())
+        print(main.halolink_connection.access_token)
     else:
         print("Please choose an option. Run with --help for a list of options.")

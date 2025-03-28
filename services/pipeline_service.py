@@ -109,12 +109,11 @@ class PipelineService:
             else:
                 if not dry_run:
                     field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"], current_image_metadata)
-                    move_result = await self.halolink_connection.move_image(image["image"]["id"],  study.value["id"], HLStudy.ESCROW_2.value["id"])
+                    move_result = await self.halolink_connection.move_image(image["image"]["id"], study.value["id"], HLStudy.ESCROW_2.value["id"])
                 action = "Attached available metadata and moved to Escrow 2"
             print(image["image"]["tag"] + "," + current_image_metadata.get_metadata_update_string_plain() + "," + "ACTION: " + action + ",")
             count = count + 1
-            if count == 50:
-                break
+        print(str(count) + " files processed.")
         return image_metadata
 
 
