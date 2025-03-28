@@ -48,7 +48,6 @@ class PipelineService:
             for image_field in halolink_image["image"]["fieldValues"]:
                 if "Disease" in image_field["systemField"]["name"]:
                     image_metadata.error_message = "WARNING: Some metadata already exists. "
-                    #return image_metadata
 
             if is_wsi:
                 # WSIs have additional metadata.

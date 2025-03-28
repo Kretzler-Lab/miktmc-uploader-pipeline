@@ -23,7 +23,6 @@ class RedcapService:
                     slides[slide.barcode] = slide
             return {"parent_metadata": redcap_metadata, "wsi_images": slides}
         else:
-            #print("WARNING: biopsy id " + biopsy_id + " not found in REDCap.")
             return None
 
 
