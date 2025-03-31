@@ -127,7 +127,7 @@ if __name__ == "__main__":
             asyncio.run(main.escrow_1_metadata_dry_run())
         elif args.dry_run == "CI":
             asyncio.run(main.curegn_incoming_metadata_dry_run())
-    elif args.update:
+    elif args.attach:
         if args.update == "E1":
             asyncio.run(main.attach_escrow_1_metadata())
         elif args.update == "CI":
