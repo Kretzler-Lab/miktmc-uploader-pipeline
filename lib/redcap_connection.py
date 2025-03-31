@@ -26,14 +26,15 @@ DEFAULT_FIELD_LIST.extend(slide_stain_fields)
 DEFAULT_FIELD_LIST.extend(slide_barcode_fields)
 
 
-def get_disease(code: int):
+def get_disease(code: str):
     disease_codes = {
-        1: "MCD",
-        2: "MCD + C1q",
-        3: "FSGS",
-        4: "FSGS + C1q",
-        5: "MN",
-        6: "IgA"
+        "1": "MCD",
+        "2": "MCD + C1q",
+        "3": "FSGS",
+        "4": "FSGS + C1q",
+        "5": "MN",
+        "6": "IgA",
+        "": ""
     }
     return disease_codes[code]
 
@@ -41,45 +42,24 @@ def get_disease(code: int):
 def get_stain(code: int):
     stain_codes = {
         1: "HE",
-        2: "HE - Frozen Section",
+        2: "HD-FS",
         3: "PAS",
         4: "PAS - Frozen Section",
-        5: "Silver",
+        5: "SIL",
         6: "TolBlue",
-        7: "Trichrome",
-        8: "Trichrome-Silver",
-        9: "Unknown",
-        10: "Other - Actin",
-        11: "Other - Acid Fuchsin Orange G (AFOG)",
-        12: "Other - Congo Red (CR)/Amyloid",
-        13: "Other - CD3",
-        14: "Other - CD5",
-        15: "Other - CD10",
-        16: "Other - CD18",
-        17: "Other - CD20",
-        18: "Other - CD23",
-        19: "Other - CD34",
-        20: "Other - CD43",
-        21: "Other - CD68",
-        22: "Other - CD138",
-        23: "Other - Cytokeratin",
-        24: "Other - Desmin",
-        25: "Other - Elastin",
-        26: "Other - EVG",
-        27: "Other - Hematoxylin Phloxine Saffron (HSP)",
-        28: "Other - IgG",
-        29: "Other - IgG4",
-        30: "Other - Kappa (IHC or in situ)",
-        31: "Other - Ki67",
-        32: "Other - Lambda (IHC or in situ)",
-        33: "Other - Melan-A",
-        34: "Other - PLA2R",
-        35: "Other - PNL2",
-        36: "Other - ThioFlavin",
-        37: "Other - TRP-2",
-        38: "Other - WT1"
+        7: "TRI",
+        8: "TRI-SIL",
+        9: "UNK",
     }
-    return stain_codes[code]
+
+    if code > 9:
+        stain = "OTH"
+    elif code in stain_codes:
+        stain = stain_codes[code]
+    else:
+        stain = "UNK"
+
+    return stain
 
 
 class RedcapConnection:

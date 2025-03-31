@@ -3,3 +3,4 @@ python-dotenv
 aiohttp
 gql
 asyncio
+pymongo
