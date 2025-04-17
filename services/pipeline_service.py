@@ -6,8 +6,10 @@ from model.redcap_metadata import RedcapMetadata
 from services.halolink_service import HalolinkService, parse_biopsy_id
 from services.redcap_service import RedcapService
 
+
 class PipelineService:
-    def __init__(self, halolink_connection: HalolinkConnection, redcap_connection: RedcapConnection, uploader_connection: UploaderConnection):
+    def __init__(self, halolink_connection: HalolinkConnection, redcap_connection: RedcapConnection,
+                 uploader_connection: UploaderConnection):
         self.halolink_connection = halolink_connection
         self.redcap_connection = redcap_connection
         self.halolink_service = HalolinkService(self.halolink_connection)
@@ -59,7 +61,8 @@ class PipelineService:
                         image_metadata = ImageMetadata(redcap_data["parent_metadata"])
                         image_metadata.image_type = "WSImage"
                         image_metadata.missing_metadata = True
-                        image_metadata.error_message = "WARNING: Barcode " + str(image_barcode) + " not found for biopsy " + biopsy_id + ". "
+                        image_metadata.error_message = "WARNING: Barcode " + str(
+                            image_barcode) + " not found for biopsy " + biopsy_id + ". "
                 else:
                     image_metadata.missing_metadata = True
                     image_metadata.error_message = "WARNING: Barcode is blank. "
@@ -88,7 +91,8 @@ class PipelineService:
         self.redcap_data_cache[biopsy_id] = redcap_data
         return image_metadata
 
-    async def get_metadata_for_images_in_study(self, src_study: HLStudy, dest_study: HLStudy, default_study_id: str, dry_run: bool = True) -> dict:
+    async def get_metadata_for_images_in_study(self, src_study: HLStudy, dest_study: HLStudy, default_study_id: str,
+                                               dry_run: bool = True) -> dict:
         images = await self.halolink_connection.get_images_in_study(src_study.value["pk"])
         image_metadata = {}
         count = 0
@@ -102,17 +106,22 @@ class PipelineService:
             elif current_image_metadata.missing_metadata:
                 if not dry_run:
                     field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"], current_image_metadata)
-                    if src_study != HLStudy.CUREGN_ESCROW_1:
-                        move_result = await self.halolink_connection.move_image(image["image"]["id"], src_study.value["id"], dest_study.value["id"])
-                action = "Attached available metadata and moved/left in Escrow 1"
+
+                    # If the src study isn't an escrow folder, move it. Otherwise, keep it there.
+                    if not src_study.value["escrow"]:
+                        move_result = await self.halolink_connection.move_image(image["image"]["id"],
+                                                                                src_study.value["id"],
+                                                                                dest_study.value["id"])
+                action = "Attached available metadata and moved to or left in Escrow 1"
             else:
                 if not dry_run:
-                    field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"], current_image_metadata)
-                    move_result = await self.halolink_connection.move_image(image["image"]["id"], src_study.value["id"], dest_study.value["id"])
+                    field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"],
+                                                                                            current_image_metadata)
+                    move_result = await self.halolink_connection.move_image(image["image"]["id"], src_study.value["id"],
+                                                                            dest_study.value["id"])
                 action = "Attached available metadata and moved to Escrow 2"
-            print(image["image"]["tag"] + "," + current_image_metadata.get_metadata_update_string_plain() + "," + "ACTION: " + action + ",")
+            print(image["image"][
+                      "tag"] + "," + current_image_metadata.get_metadata_update_string_plain() + "," + "ACTION: " + action + ",")
             count = count + 1
         print(str(count) + " files processed.")
         return image_metadata
-
-
