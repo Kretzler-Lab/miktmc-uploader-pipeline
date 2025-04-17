@@ -1,3 +1,5 @@
+import copy
+
 import requests
 import os
 import logging
@@ -25,6 +27,12 @@ DEFAULT_FIELD_LIST.extend(slide_level_fields)
 DEFAULT_FIELD_LIST.extend(slide_stain_fields)
 DEFAULT_FIELD_LIST.extend(slide_barcode_fields)
 
+DEFAULT_FIELD_LIST_CUREGN_DIABETES = copy.copy(DEFAULT_FIELD_LIST)
+DEFAULT_FIELD_LIST_CUREGN_DIABETES.remove("neptune_studyid_screen")
+
+DEFAULT_FIELD_LIST_NEPTUNE = copy.copy(DEFAULT_FIELD_LIST_CUREGN_DIABETES)
+DEFAULT_FIELD_LIST_NEPTUNE.remove('subjectid')
+DEFAULT_FIELD_LIST_NEPTUNE.remove('pathdiseasecohort')
 
 def get_disease(code: str):
     disease_codes = {
@@ -65,12 +73,26 @@ def get_stain(code: int):
 class RedcapConnection:
 
     def __init__(self):
+        self.default_field_list = None
+        self.token = None
         load_dotenv(".env")
-        self.token = os.environ.get("redcap_token")
+        self.connect_curegn()
+
+    def connect_curegn(self):
+        self.token = os.environ.get("redcap_token_curegn")
+        self.default_field_list = DEFAULT_FIELD_LIST
+
+    def connect_curegn_diabetes(self):
+        self.token = os.environ.get("redcap_token_curegn_diabetes")
+        self.default_field_list = DEFAULT_FIELD_LIST_CUREGN_DIABETES
+
+    def connect_neptune(self):
+        self.token = os.environ.get("redcap_token_neptune")
+        self.default_field_list = DEFAULT_FIELD_LIST_NEPTUNE
 
     def add_fields(self, request_data: dict):
         i = 0
-        for field in DEFAULT_FIELD_LIST:
+        for field in self.default_field_list:
             request_data[f"fields[{i}]"] = field
             i = i + 1
         return request_data
@@ -116,7 +138,9 @@ class RedcapConnection:
         request_data = {
             "filterLogic": filter_logic
         }
-        return self.export_records(request_data).json()
+        result = self.export_records(request_data).json()
+        return result
 
     def get_by_biopsy_id(self, biopsy_id: str) -> str:
-        return self.get_filtered_records(f"[biopsyid]='{biopsy_id}'")
+        result = self.get_filtered_records(f"[biopsyid]='{biopsy_id}'")
+        return result

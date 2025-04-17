@@ -88,27 +88,27 @@ class PipelineService:
         self.redcap_data_cache[biopsy_id] = redcap_data
         return image_metadata
 
-    async def get_metadata_for_images_in_study(self, study: HLStudy, default_study: str, dry_run: bool = True) -> dict:
-        images = await self.halolink_connection.get_images_in_study(study.value["pk"])
+    async def get_metadata_for_images_in_study(self, src_study: HLStudy, dest_study: HLStudy, default_study_id: str, dry_run: bool = True) -> dict:
+        images = await self.halolink_connection.get_images_in_study(src_study.value["pk"])
         image_metadata = {}
         count = 0
         print("Filename," + ImageMetadata(RedcapMetadata("")).get_metadata_header_string() + ",Action")
         for image in images:
             action = ""
-            current_image_metadata = await self.get_metadata_for_image(image, default_study)
+            current_image_metadata = await self.get_metadata_for_image(image, default_study_id)
             image_metadata[image["image"]["tag"]] = current_image_metadata
             if current_image_metadata.in_error:
                 action = "Left in current folder."
             elif current_image_metadata.missing_metadata:
                 if not dry_run:
                     field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"], current_image_metadata)
-                    if study != HLStudy.ESCROW_1:
-                        move_result = await self.halolink_connection.move_image(image["image"]["id"], study.value["id"], HLStudy.ESCROW_1.value["id"])
+                    if src_study != HLStudy.CUREGN_ESCROW_1:
+                        move_result = await self.halolink_connection.move_image(image["image"]["id"], src_study.value["id"], dest_study.value["id"])
                 action = "Attached available metadata and moved/left in Escrow 1"
             else:
                 if not dry_run:
                     field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"], current_image_metadata)
-                    move_result = await self.halolink_connection.move_image(image["image"]["id"], study.value["id"], HLStudy.ESCROW_2.value["id"])
+                    move_result = await self.halolink_connection.move_image(image["image"]["id"], src_study.value["id"], dest_study.value["id"])
                 action = "Attached available metadata and moved to Escrow 2"
             print(image["image"]["tag"] + "," + current_image_metadata.get_metadata_update_string_plain() + "," + "ACTION: " + action + ",")
             count = count + 1

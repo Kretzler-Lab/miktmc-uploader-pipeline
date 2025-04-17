@@ -25,10 +25,17 @@ class HLField(Enum):
 
 class HLStudy(Enum):
     INCOMING_CUREGN = {"pk": 9783, "id": "U3R1ZHk6OTc4Mw=="}
-    ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ=="}
-    ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw=="}
-    ANNOTATION_TEST = {"pk": 9586, "id": ""}
-    COLLEEN_TEST_PK = {"pk": 9580, "id": ""}
+    CUREGN_ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ=="}
+    CUREGN_ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw=="}
+    INCOMING_CUREGN_DIABETES = {"pk": 10487, "id": "U3R1ZHk6MTA0ODc="}
+    CUREGN_DIABETES_ESCROW_1 = {"pk": 9837, "id": "U3R1ZHk6OTgzNw=="}
+    CUREGN_DIABETES_ESCROW_2 = {"pk": 9838, "id": "U3R1ZHk6OTgzOA=="}
+    INCOMING_NEPTUNE = {"pk": 9784, "id": "U3R1ZHk6OTc4NA=="}
+    NEPTUNE_ESCROW_1 = {"pk": 9666, "id": "U3R1ZHk6OTY2Ng=="}
+    NEPTUNE_ESCROW_2 = {"pk": 9696, "id": "U3R1ZHk6OTY5Ng=="}
+    ANNOTATION_TEST = {"pk": 9586, "id": "U3R1ZHk6OTU4Ng=="}
+    COLLEEN_TEST_PK = {"pk": 9580, "id": "U3R1ZHk6OTU4MA=="}
+
 
 
 class HalolinkConnection:

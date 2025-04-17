@@ -16,8 +16,11 @@ class RedcapMetadata:
         self.event_type = "Enrollment Biopsy Material"
 
     def fill_with_redcap_result(self, redcap_result: dict):
-        self.cgn_patient_study_id = redcap_result["subjectid"]
-        self.disease = get_disease(redcap_result["pathdiseasecohort"])
-        self.biopsy_date = redcap_result["renalbxdate"]
-        self.npt_patient_study_id = redcap_result["neptune_studyid_screen"]
+        if "subjectid" in redcap_result:
+            self.cgn_patient_study_id = redcap_result["subjectid"]
+        if "pathdiseasecohort" in redcap_result:
+            self.disease = get_disease(redcap_result["pathdiseasecohort"])
+        if "neptune_studyid_screen" in redcap_result:
+            self.npt_patient_study_id = redcap_result["neptune_studyid_screen"]
         self.em_count = redcap_result["numems_qc"]
+        self.biopsy_date = redcap_result["renalbxdate"]
