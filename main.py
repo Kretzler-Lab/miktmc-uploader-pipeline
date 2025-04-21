@@ -54,19 +54,59 @@ class Main:
 
     async def curegn_incoming_metadata_dry_run(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, "CureGN", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, HLStudy.CUREGN_ESCROW_1, "CureGN", True)
 
-    async def escrow_1_metadata_dry_run(self):
+    async def curegn_escrow_1_metadata_dry_run(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.ESCROW_1, "CureGN", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_ESCROW_1, HLStudy.CUREGN_ESCROW_2, "CureGN", True)
+
+    async def curegn_diabetes_incoming_metadata_dry_run(self):
+        await self.connect_to_halolink()
+        self.redcap_connection.connect_curegn_diabetes()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN_DIABETES, HLStudy.CUREGN_DIABETES_ESCROW_1, "CureGN Diabetes", True)
+
+    async def curegn_diabetes_escrow_1_metadata_dry_run(self):
+        await self.connect_to_halolink()
+        self.redcap_connection.connect_curegn_diabetes()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_DIABETES_ESCROW_1, HLStudy.CUREGN_DIABETES_ESCROW_2, "CureGN Diabetes", True)
+
+    async def neptune_incoming_metadata_dry_run(self):
+        self.redcap_connection.connect_neptune()
+        await self.connect_to_halolink()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_NEPTUNE, HLStudy.NEPTUNE_ESCROW_1, "Neptune", True)
+
+    async def neptune_escrow_1_metadata_dry_run(self):
+        await self.connect_to_halolink()
+        self.redcap_connection.connect_neptune()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.NEPTUNE_ESCROW_1, HLStudy.NEPTUNE_ESCROW_2, "Neptune", True)
 
     async def attach_curegn_incoming_metadata(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, "CureGN", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, HLStudy.CUREGN_ESCROW_1, "CureGN", False)
 
-    async def attach_escrow_1_metadata(self):
+    async def attach_curegn_escrow_1_metadata(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.ESCROW_1, "CureGN", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_ESCROW_1, HLStudy.CUREGN_ESCROW_2, "CureGN", False)
+
+    async def attach_curegn_diabetes_incoming_metadata(self):
+        self.redcap_connection.connect_curegn_diabetes()
+        await self.connect_to_halolink()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN_DIABETES, HLStudy.CUREGN_DIABETES_ESCROW_1, "CureGN Diabetes", False)
+
+    async def attach_curegn_diabetes_escrow_1_metadata(self):
+        self.redcap_connection.connect_curegn_diabetes()
+        await self.connect_to_halolink()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_DIABETES_ESCROW_1, HLStudy.CUREGN_DIABETES_ESCROW_2, "CureGN Diabetes", False)
+
+    async def attach_neptune_incoming_metadata(self):
+        await self.connect_to_halolink()
+        self.redcap_connection.connect_neptune()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_NEPTUNE, HLStudy.NEPTUNE_ESCROW_1, "Neptune", False)
+
+    async def attach_neptune_escrow_1_metadata(self):
+        await self.connect_to_halolink()
+        self.redcap_connection.connect_neptune()
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.NEPTUNE_ESCROW_1, HLStudy.NEPTUNE_ESCROW_2, "Neptune", False)
 
 
 if __name__ == "__main__":
@@ -78,7 +118,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d",
         "--dry_run",
-        choices=["CI", "E1"],
+        choices=["CI", "CE1", "E1", "CDI", "CDE1", "NI", "NE1"],
         help='Execute a dry run of attaching metadata and moving images. Prints metadata and final action. Options are the source folder.',
         required=False,
     )
@@ -86,7 +126,7 @@ if __name__ == "__main__":
         "-a",
         "--attach",
         help='Attach REDCap metadata to all HALOLink images in source folder and move images to appropriate escrow folder. Options are the source folder. Prints metadata and action taken.',
-        choices=["CI", "E1"],
+        choices=["CI", "CE1", "E1", "CDI", "CDE1", "NI", "NE1"],
         required=False,
     )
     parser.add_argument(
@@ -123,15 +163,31 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     if args.dry_run:
-        if args.dry_run == "E1":
-            asyncio.run(main.escrow_1_metadata_dry_run())
+        if args.dry_run == "CE1" or args.dry_run == "E1":
+            asyncio.run(main.curegn_escrow_1_metadata_dry_run())
         elif args.dry_run == "CI":
             asyncio.run(main.curegn_incoming_metadata_dry_run())
+        elif args.dry_run == "CDI":
+            asyncio.run(main.curegn_diabetes_incoming_metadata_dry_run())
+        elif args.dry_run == "CDE1":
+            asyncio.run(main.curegn_diabetes_escrow_1_metadata_dry_run())
+        elif args.dry_run == "NI":
+            asyncio.run(main.neptune_incoming_metadata_dry_run())
+        elif args.dry_run == "NE1":
+            asyncio.run(main.neptune_escrow_1_metadata_dry_run())
     elif args.attach:
-        if args.update == "E1":
-            asyncio.run(main.attach_escrow_1_metadata())
-        elif args.update == "CI":
+        if args.attach == "CE1" or args.dry_run == "E1":
+            asyncio.run(main.attach_curegn_escrow_1_metadata())
+        elif args.attach == "CI":
             asyncio.run(main.attach_curegn_incoming_metadata())
+        elif args.attach == "CDI":
+            asyncio.run(main.attach_curegn_diabetes_incoming_metadata())
+        elif args.attach == "CDE1":
+            asyncio.run(main.attach_curegn_diabetes_escrow_1_metadata())
+        elif args.attach == "NI":
+            asyncio.run(main.attach_neptune_incoming_metadata())
+        elif args.attach == "NE1":
+            asyncio.run(main.attach_neptune_escrow_1_metadata())
     elif args.count:
         asyncio.run(main.verify_slide_counts(args.biopsy_id, args.count))
     elif args.biopsy_id:
@@ -139,7 +195,7 @@ if __name__ == "__main__":
     elif args.image_id:
         asyncio.run(main.print_halolink_image_info(int(args.image_id)))
     elif args.study_pk:
-        asyncio.run(main.print_study_info(args.study_pk))
+        asyncio.run(main.print_study_info(int(args.study_pk)))
     elif args.print_token:
         asyncio.run(main.connect_to_halolink())
         print(main.halolink_connection.access_token)

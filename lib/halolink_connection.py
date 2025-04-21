@@ -23,12 +23,20 @@ class HLField(Enum):
     LEVEL = {"id": "U3lzdGVtRmllbGQ6MTQ=", "name": "Level"}
 
 
+# escrow = True is a folder that's intended for images that are missing metadata
 class HLStudy(Enum):
-    INCOMING_CUREGN = {"pk": 9783, "id": "U3R1ZHk6OTc4Mw=="}
-    ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ=="}
-    ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw=="}
-    ANNOTATION_TEST = {"pk": 9586, "id": ""}
-    COLLEEN_TEST_PK = {"pk": 9580, "id": ""}
+    INCOMING_CUREGN = {"pk": 9783, "id": "U3R1ZHk6OTc4Mw==", "escrow": False}
+    CUREGN_ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ==", "escrow": True}
+    CUREGN_ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw==", "escrow": False}
+    INCOMING_CUREGN_DIABETES = {"pk": 10487, "id": "U3R1ZHk6MTA0ODc=", "escrow": False}
+    CUREGN_DIABETES_ESCROW_1 = {"pk": 9837, "id": "U3R1ZHk6OTgzNw==", "escrow": True}
+    CUREGN_DIABETES_ESCROW_2 = {"pk": 9838, "id": "U3R1ZHk6OTgzOA==", "escrow": False}
+    INCOMING_NEPTUNE = {"pk": 9784, "id": "U3R1ZHk6OTc4NA==", "escrow": False}
+    NEPTUNE_ESCROW_1 = {"pk": 9666, "id": "U3R1ZHk6OTY2Ng==", "escrow": True}
+    NEPTUNE_ESCROW_2 = {"pk": 9696, "id": "U3R1ZHk6OTY5Ng==", "escrow": False}
+    ANNOTATION_TEST = {"pk": 9586, "id": "U3R1ZHk6OTU4Ng==", "escrow": False}
+    COLLEEN_TEST_PK = {"pk": 9580, "id": "U3R1ZHk6OTU4MA==", "escrow": False}
+
 
 
 class HalolinkConnection:
@@ -62,7 +70,8 @@ class HalolinkConnection:
             headers={"authorization": f"bearer {self.access_token}"},
             subprotocols=[WebsocketsTransport.APOLLO_SUBPROTOCOL],
             ssl=ssl.SSLContext(ssl.PROTOCOL_TLS),
-            connect_timeout=40
+            connect_timeout=40,
+            connect_args={"max_size": None}
         )
         if add_local_bearer:
             transport.headers["x-authentication-scheme"] = "LocalBearer"
