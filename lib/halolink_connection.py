@@ -22,22 +22,23 @@ class HLField(Enum):
     EVENT_TYPE = {"id": "U3lzdGVtRmllbGQ6MTY=", "name": "Event_Type"}
     LEVEL = {"id": "U3lzdGVtRmllbGQ6MTQ=", "name": "Level"}
 
+# Destination studies
+class HLStudyEscrow(Enum):
+    CUREGN_ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ==", "name": "CureGN Escrow 1"}
+    CUREGN_ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw==", "name": "CureGN Escrow 2"}
+    CUREGN_DIABETES_ESCROW_1 = {"pk": 9837, "id": "U3R1ZHk6OTgzNw==", "name": "CureGN Diabetes Escrow 1"}
+    CUREGN_DIABETES_ESCROW_2 = {"pk": 9838, "id": "U3R1ZHk6OTgzOA==", "name": "CureGN Diabetes Escrow 2"}
+    NEPTUNE_ESCROW_1 = {"pk": 9666, "id": "U3R1ZHk6OTY2Ng==", "name": "Neptune Escrow 1"}
+    NEPTUNE_ESCROW_2 = {"pk": 9696, "id": "U3R1ZHk6OTY5Ng==", "name": "Neptune Escrow 2"}
 
-# escrow = True is a folder that's intended for images that are missing metadata
+# Source studies
 class HLStudy(Enum):
-    INCOMING_CUREGN = {"pk": 9783, "id": "U3R1ZHk6OTc4Mw==", "escrow": False}
-    CUREGN_ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ==", "escrow": True}
-    CUREGN_ESCROW_2 = {"pk": 9703, "id": "U3R1ZHk6OTcwMw==", "escrow": False}
-    INCOMING_CUREGN_DIABETES = {"pk": 10487, "id": "U3R1ZHk6MTA0ODc=", "escrow": False}
-    CUREGN_DIABETES_ESCROW_1 = {"pk": 9837, "id": "U3R1ZHk6OTgzNw==", "escrow": True}
-    CUREGN_DIABETES_ESCROW_2 = {"pk": 9838, "id": "U3R1ZHk6OTgzOA==", "escrow": False}
-    INCOMING_NEPTUNE = {"pk": 9784, "id": "U3R1ZHk6OTc4NA==", "escrow": False}
-    NEPTUNE_ESCROW_1 = {"pk": 9666, "id": "U3R1ZHk6OTY2Ng==", "escrow": True}
-    NEPTUNE_ESCROW_2 = {"pk": 9696, "id": "U3R1ZHk6OTY5Ng==", "escrow": False}
-    ANNOTATION_TEST = {"pk": 9586, "id": "U3R1ZHk6OTU4Ng==", "escrow": False}
-    COLLEEN_TEST_PK = {"pk": 9580, "id": "U3R1ZHk6OTU4MA==", "escrow": False}
-
-
+    INCOMING_CUREGN = {"pk": 9783, "id": "U3R1ZHk6OTc4Mw==", "name": "Incoming CureGN", "escrow": False, "success_dest": HLStudyEscrow.CUREGN_ESCROW_2, "failure_dest": HLStudyEscrow.CUREGN_ESCROW_1}
+    CUREGN_ESCROW_1 = {"pk": 9735, "id": "U3R1ZHk6OTczNQ==", "name": "CureGN Escrow 1",  "escrow": True, "success_dest": HLStudyEscrow.CUREGN_ESCROW_2, "failure_dest": HLStudyEscrow.CUREGN_ESCROW_1}
+    INCOMING_CUREGN_DIABETES = {"pk": 10487, "id": "U3R1ZHk6MTA0ODc=", "name": "Incoming CureGN Diabetes",  "escrow": False, "success_dest": HLStudyEscrow.CUREGN_DIABETES_ESCROW_2, "failure_dest": HLStudyEscrow.CUREGN_DIABETES_ESCROW_1}
+    CUREGN_DIABETES_ESCROW_1 = {"pk": 9837, "id": "U3R1ZHk6OTgzNw==", "name": "CureGN Diabetes Escrow 1",  "escrow": True, "success_dest": HLStudyEscrow.CUREGN_DIABETES_ESCROW_2, "failure_dest": HLStudyEscrow.CUREGN_DIABETES_ESCROW_1}
+    INCOMING_NEPTUNE = {"pk": 9784, "id": "U3R1ZHk6OTc4NA==", "name": "Incoming Neptune",  "escrow": False, "success_dest": HLStudyEscrow.NEPTUNE_ESCROW_2, "failure_dest": HLStudyEscrow.NEPTUNE_ESCROW_1}
+    NEPTUNE_ESCROW_1 = {"pk": 9666, "id": "U3R1ZHk6OTY2Ng==", "name": "Neptune Escrow 1",  "escrow": True, "success_dest": HLStudyEscrow.NEPTUNE_ESCROW_2, "failure_dest": HLStudyEscrow.NEPTUNE_ESCROW_1}
 
 class HalolinkConnection:
 
