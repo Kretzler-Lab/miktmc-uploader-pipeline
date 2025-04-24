@@ -54,59 +54,59 @@ class Main:
 
     async def curegn_incoming_metadata_dry_run(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, HLStudy.CUREGN_ESCROW_1, "CureGN", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, "CureGN", True)
 
     async def curegn_escrow_1_metadata_dry_run(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_ESCROW_1, HLStudy.CUREGN_ESCROW_2, "CureGN", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_ESCROW_1,"CureGN", True)
 
     async def curegn_diabetes_incoming_metadata_dry_run(self):
         await self.connect_to_halolink()
         self.redcap_connection.connect_curegn_diabetes()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN_DIABETES, HLStudy.CUREGN_DIABETES_ESCROW_1, "CureGN Diabetes", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN_DIABETES,"CureGN Diabetes", True)
 
     async def curegn_diabetes_escrow_1_metadata_dry_run(self):
         await self.connect_to_halolink()
         self.redcap_connection.connect_curegn_diabetes()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_DIABETES_ESCROW_1, HLStudy.CUREGN_DIABETES_ESCROW_2, "CureGN Diabetes", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_DIABETES_ESCROW_1, "CureGN Diabetes", True)
 
     async def neptune_incoming_metadata_dry_run(self):
         self.redcap_connection.connect_neptune()
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_NEPTUNE, HLStudy.NEPTUNE_ESCROW_1, "Neptune", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_NEPTUNE, "Neptune", True)
 
     async def neptune_escrow_1_metadata_dry_run(self):
         await self.connect_to_halolink()
         self.redcap_connection.connect_neptune()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.NEPTUNE_ESCROW_1, HLStudy.NEPTUNE_ESCROW_2, "Neptune", True)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.NEPTUNE_ESCROW_1, "Neptune", True)
 
     async def attach_curegn_incoming_metadata(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, HLStudy.CUREGN_ESCROW_1, "CureGN", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN, "CureGN", False)
 
     async def attach_curegn_escrow_1_metadata(self):
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_ESCROW_1, HLStudy.CUREGN_ESCROW_2, "CureGN", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_ESCROW_1, "CureGN", False)
 
     async def attach_curegn_diabetes_incoming_metadata(self):
         self.redcap_connection.connect_curegn_diabetes()
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN_DIABETES, HLStudy.CUREGN_DIABETES_ESCROW_1, "CureGN Diabetes", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_CUREGN_DIABETES, "CureGN Diabetes", False)
 
     async def attach_curegn_diabetes_escrow_1_metadata(self):
         self.redcap_connection.connect_curegn_diabetes()
         await self.connect_to_halolink()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_DIABETES_ESCROW_1, HLStudy.CUREGN_DIABETES_ESCROW_2, "CureGN Diabetes", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.CUREGN_DIABETES_ESCROW_1, "CureGN Diabetes", False)
 
     async def attach_neptune_incoming_metadata(self):
         await self.connect_to_halolink()
         self.redcap_connection.connect_neptune()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_NEPTUNE, HLStudy.NEPTUNE_ESCROW_1, "Neptune", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.INCOMING_NEPTUNE, "Neptune", False)
 
     async def attach_neptune_escrow_1_metadata(self):
         await self.connect_to_halolink()
         self.redcap_connection.connect_neptune()
-        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.NEPTUNE_ESCROW_1, HLStudy.NEPTUNE_ESCROW_2, "Neptune", False)
+        await self.pipeline_service.get_metadata_for_images_in_study(HLStudy.NEPTUNE_ESCROW_1, "Neptune", False)
 
 
 if __name__ == "__main__":

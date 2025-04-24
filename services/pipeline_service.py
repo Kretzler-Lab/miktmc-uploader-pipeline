@@ -91,7 +91,7 @@ class PipelineService:
         self.redcap_data_cache[biopsy_id] = redcap_data
         return image_metadata
 
-    async def get_metadata_for_images_in_study(self, src_study: HLStudy, dest_study: HLStudy, default_study_id: str,
+    async def get_metadata_for_images_in_study(self, src_study: HLStudy, default_study_id: str,
                                                dry_run: bool = True) -> dict:
         images = await self.halolink_connection.get_images_in_study(src_study.value["pk"])
         image_metadata = {}
@@ -111,15 +111,15 @@ class PipelineService:
                     if not src_study.value["escrow"]:
                         move_result = await self.halolink_connection.move_image(image["image"]["id"],
                                                                                 src_study.value["id"],
-                                                                                dest_study.value["id"])
-                action = "Attached available metadata and moved to or left in Escrow 1"
+                                                                                src_study.value["failure_dest"].value["id"])
+                action = "Attached available metadata and moved from " + src_study.value["name"] + " to or left in " + src_study.value["failure_dest"].value["name"]
             else:
                 if not dry_run:
                     field_update_result = await self.halolink_service.update_image_metadata(image["image"]["id"],
                                                                                             current_image_metadata)
                     move_result = await self.halolink_connection.move_image(image["image"]["id"], src_study.value["id"],
-                                                                            dest_study.value["id"])
-                action = "Attached available metadata and moved to Escrow 2"
+                                                                            src_study.value["success_dest"].value["id"])
+                action = "Attached available metadata and moved from " + src_study.value["name"] + " to " + src_study.value["success_dest"].value["name"]
             print(image["image"][
                       "tag"] + "," + current_image_metadata.get_metadata_update_string_plain() + "," + "ACTION: " + action + ",")
             count = count + 1
