@@ -176,7 +176,7 @@ if __name__ == "__main__":
         elif args.dry_run == "NE1":
             asyncio.run(main.neptune_escrow_1_metadata_dry_run())
     elif args.attach:
-        if args.attach == "CE1" or args.dry_run == "E1":
+        if args.attach == "CE1" or args.attach == "E1":
             asyncio.run(main.attach_curegn_escrow_1_metadata())
         elif args.attach == "CI":
             asyncio.run(main.attach_curegn_incoming_metadata())
