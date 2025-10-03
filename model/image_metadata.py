@@ -15,13 +15,19 @@ class ImageMetadata:
         self.error_message = ""
 
     def fill_wsi_with_redcap_result(self, redcap_result: dict, slide_num: int):
-        self.level = redcap_result["slidelevel" + str(slide_num)]
         self.image_type = 'WSImage'
         self.barcode = redcap_result["slidebarcode" + str(slide_num)]
+        
         if redcap_result["slidestain" + str(slide_num)]:
             self.slide_stain = get_stain(int(redcap_result["slidestain" + str(slide_num)]))
         else:
             self.slide_stain = ""
+            
+        if redcap_result["slidelevel" + str(slide_num)]:
+            self.level = redcap_result["slidelevel" + str(slide_num)]
+        else:
+            self.level = ""
+        
 
 
     def get_halolink_updates(self):
@@ -85,6 +91,7 @@ class ImageMetadata:
             missing_fields.append("patient_study_id")
         if self.missing_metadata:
             self.error_message = self.error_message + "WARNING: field(s) " + ",".join(missing_fields) + " are/is missing."
+
 
 
 

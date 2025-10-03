@@ -14,7 +14,7 @@ DEFAULT_FIELD_LIST = ["subjectid", "pathdiseasecohort", "renalbxdate", "numems_q
 DEFAULT_EVENTS = []
 DEFAULT_FORMS = []
 
-slide_nums = list(range(1, 21))
+slide_nums = list(range(1, 31))
 slide_level_fields = []
 slide_stain_fields = []
 slide_barcode_fields = []
@@ -144,3 +144,4 @@ class RedcapConnection:
     def get_by_biopsy_id(self, biopsy_id: str) -> str:
         result = self.get_filtered_records(f"[biopsyid]='{biopsy_id}'")
         return result
+
